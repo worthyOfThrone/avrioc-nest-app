@@ -1,9 +1,10 @@
 // In this file you can configure migrate-mongo
+require('dotenv').config();
 
 const config = {
   mongodb: {
     // TODO Change (or review) the url to your MongoDB:
-    url: "mongodb+srv://deved:<my-password>@my-cluster.bahwy.mongodb.net/demo?retryWrites=true&w=majority",
+    url: process.env.MONGODB_URI,
 
     // TODO Change this to your database name:
     databaseName: "demo",
