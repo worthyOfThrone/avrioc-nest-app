@@ -1,4 +1,4 @@
-import { IsBoolean, isBoolean, IsEmail, IsNotEmpty, Length } from "class-validator"
+import { IsBoolean, IsEmail, IsNotEmpty, Length } from "class-validator"
 import { IsEmailUserAlreadyExist } from "src/helpers/email-validator.service"
 
 export class CreateUserDto {

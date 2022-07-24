@@ -29,6 +29,15 @@ async function bootstrap() {
   SwaggerModule.setup('api/v1', app, document);
 
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
+
+  // if using third party APIs, setup a request timeout for security purpose
+  // dependency => a timeout property in seconds and lodash(optional)
+  // const requestTimeout = _.toNumber(process.env.timeout || );
+  // if (requestTimeout) {
+  //   app.use(connectTimeout(requestTimeout.toString()));
+  // }
+
+
   await app.listen(3000);
 }
 bootstrap();
