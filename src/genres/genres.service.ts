@@ -16,9 +16,7 @@ export class GenresService {
   }
 
   async getGenrebyName(name: string): Promise<Genre> | null {
-    const genre = await this.genresRepository.findOne({ name });
-    if (!genre) return null;
-    return genre;
+    return await this.genresRepository.findOne({ name });
   }
 
   async getGenres(): Promise<Genre[]> {

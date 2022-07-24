@@ -4,13 +4,17 @@ import {
 	Get,
 	HttpCode,
 	HttpException,
+	HttpStatus,
 	Param,
 	Patch,
 	Post,
+	UseGuards,
 	UsePipes,
 	ValidationPipe,
 } from '@nestjs/common';
 import mongoose from 'mongoose';
+import { JwtGuard } from 'src/auth/guards/jwt-guard';
+import { JwtStrategy } from 'src/auth/guards/jwt.strategy';
 import { FilmsService } from 'src/films/films.service';
 import { FilmsDocument } from 'src/films/schemas/film.schema';
 import { UserDocument } from 'src/users/schemas/user.schema';
@@ -28,38 +32,53 @@ export class ReviewsController {
 		private readonly filmsService: FilmsService,
 	) {}
 
+	@UseGuards(JwtGuard)
 	@Get(':reviewId')
 	async getReview(@Param('reviewId') reviewId: string): Promise<Review> {
-		return this.reviewsService.getReviewById(reviewId);
+		const review = this.reviewsService.getReviewById(reviewId);
+		if (!review)
+			throw new HttpException(
+				`the resource with ${reviewId} does not exist`,
+				HttpStatus.NOT_FOUND,
+			);
+		return review;
 	}
 
+	@UseGuards(JwtGuard)
 	@Get('byReviewerId/:reviewerId')
 	async getReviewByReviewerId(
 		@Param('reviewerId') reviewerId: string,
 	): Promise<Review[]> {
 		const review = await this.reviewsService.getReviewsbyReviewerId(reviewerId);
 		if (!review) {
-			throw new HttpException('Review does not exists', 404);
+			throw new HttpException(
+				`the resource with ${reviewerId} does not exist`,
+				HttpStatus.NOT_FOUND,
+			);
 		}
 		return review;
 	}
 
+	@UseGuards(JwtGuard)
 	@Get('byFilmId/:filmId')
-	async getReviewByFilmId(
-		@Param('filmId') filmId: string,
-	): Promise<Review[]> {
+	async getReviewByFilmId(@Param('filmId') filmId: string): Promise<Review[]> {
 		const reviews = await this.reviewsService.getReviewsbyFilmId(filmId);
 		if (!reviews) {
-			throw new HttpException('Review does not exists', 404);
+			throw new HttpException(
+				`the resource with ${filmId} does not exist`,
+				HttpStatus.NOT_FOUND,
+			);
 		}
 		return reviews;
 	}
 
+	@UseGuards(JwtGuard)
 	@Get()
 	async getReviews(): Promise<Review[]> {
 		return this.reviewsService.getReviews();
 	}
 
+	@UseGuards(JwtGuard)
 	@Post()
 	@HttpCode(200)
 	@UsePipes(ValidationPipe)
@@ -71,7 +90,7 @@ export class ReviewsController {
 			createReviewDto.reviewerId,
 		)) as UserDocument;
 		if (!user && !user.isReviewer) {
-			throw new HttpException('permission to write review is denied', 501);
+			throw new HttpException('permission to write review is denied', HttpStatus.FORBIDDEN);
 		}
 
 		// create only if a film id is valid
@@ -79,13 +98,14 @@ export class ReviewsController {
 			createReviewDto.filmId,
 		)) as FilmsDocument;
 		if (!film) {
-			throw new HttpException('permission to write review is denied', 501);
+			throw new HttpException('permission to write review is denied', HttpStatus.FORBIDDEN);
 		}
 		createReviewDto.filmId = film._id;
 
 		return this.reviewsService.createReview(createReviewDto);
 	}
 
+	@UseGuards(JwtGuard)
 	@Patch(':reviewId')
 	async updateReview(
 		@Param('reviewId') reviewId: string,

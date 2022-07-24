@@ -4,12 +4,15 @@ import {
 	Get,
 	HttpCode,
 	HttpException,
+	HttpStatus,
 	Param,
 	Patch,
 	Post,
+	UseGuards,
 	UsePipes,
 	ValidationPipe,
 } from '@nestjs/common';
+import { JwtGuard } from 'src/auth/guards/jwt-guard';
 import { GenresService } from 'src/genres/genres.service';
 import { ReviewsService } from 'src/reviews/reviews.service';
 import { UserDocument } from 'src/users/schemas/user.schema';
@@ -31,25 +34,39 @@ export class FilmsController {
 		private readonly usersService: UsersService,
 	) {}
 
+	@UseGuards(JwtGuard)
 	@Get(':filmId')
 	async getFilm(@Param('filmId') filmId: string): Promise<Film> {
-		return this.filmsService.getFilmById(filmId);
-	}
-
-	@Get(':name')
-	async getFilmByName(@Param('filmName') filmName: string): Promise<Film[]> {
-		const film = await this.filmsService.getFilmsbyFilmName(filmName);
+		const film = this.filmsService.getFilmById(filmId);
 		if (!film) {
-			throw new HttpException(`the resource with name ${filmName} does not exist`, 404);
+			throw new HttpException(
+				`the resource with id ${filmId} does not exist`,
+				HttpStatus.NOT_FOUND,
+			);
 		}
 		return film;
 	}
 
+	@UseGuards(JwtGuard)
+	@Get('byName/:filmName')
+	async getFilmByName(@Param('filmName') filmName: string): Promise<Film[]> {
+		const film = await this.filmsService.getFilmsbyFilmName(filmName);
+		if (!film) {
+			throw new HttpException(
+				`the resource with name ${filmName} does not exist`,
+				HttpStatus.NOT_FOUND,
+			);
+		}
+		return film;
+	}
+
+	@UseGuards(JwtGuard)
 	@Get()
 	async getFilms(): Promise<Film[]> {
 		return this.filmsService.getFilms();
 	}
 
+	@UseGuards(JwtGuard)
 	@Post()
 	@HttpCode(200)
 	@UsePipes(ValidationPipe)
@@ -75,6 +92,7 @@ export class FilmsController {
 		}
 	}
 
+	@UseGuards(JwtGuard)
 	@Post('/addResources')
 	@HttpCode(200)
 	@UsePipes(ValidationPipe)
@@ -93,12 +111,14 @@ export class FilmsController {
 				review.reviewerId,
 			)) as UserDocument;
 			if (!user || !user.isReviewer) {
-				throw new HttpException('permission to write review is denied', 501);
+				throw new HttpException(
+					'permission to write review is denied',
+					HttpStatus.FORBIDDEN,
+				);
 			}
 			isReviewer = user.isReviewer;
 			review.filmId = filmId;
 		}
-
 
 		if (allGenresVerified) {
 			return this.filmsService.addResourcesToFilm({
@@ -107,10 +127,9 @@ export class FilmsController {
 				review,
 			});
 		}
-
-		// throw exception based on verification
 	}
 
+	@UseGuards(JwtGuard)
 	@Patch(':filmId')
 	async updateFilm(
 		@Param('filmId') filmId: string,
