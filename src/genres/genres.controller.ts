@@ -4,12 +4,15 @@ import {
 	Get,
 	HttpCode,
 	HttpException,
+	HttpStatus,
 	Param,
 	Patch,
 	Post,
+	UseGuards,
 	UsePipes,
 	ValidationPipe,
 } from '@nestjs/common';
+import { JwtGuard } from 'src/auth/guards/jwt-guard';
 import { CreateGenreDto } from './dto/create-genre.dto';
 import { UpdateGenreDto } from './dto/update-genre.dto';
 import { GenresService } from './genres.service';
@@ -19,38 +22,50 @@ import { Genre } from './schemas/genre.schema';
 export class GenresController {
 	constructor(private readonly genresService: GenresService) {}
 
+	@UseGuards(JwtGuard)
 	@Get(':genreId')
 	async getGenre(@Param('genreId') genreId: string): Promise<Genre> {
-
 		const genre = await this.genresService.getGenreById(genreId);
-    	if (!genre) throw new HttpException('Genre does not exisit', 404);
+		if (!genre) {
+			throw new HttpException(
+				`the resource with ${genreId} does not exist`,
+				HttpStatus.NOT_FOUND,
+			);
+		}
 		return genre;
 	}
 
-	@Get(':name')
+	@UseGuards(JwtGuard)
+	@Get('name/:genreName')
 	async getGenreByName(@Param('genreName') genreName: string): Promise<Genre> {
 		const genre = await this.genresService.getGenrebyName(genreName);
 		if (!genre) {
-			throw new HttpException('Genre does not exists', 404);
+			throw new HttpException(
+				`the resource with ${genreName} does not exist`,
+				HttpStatus.NOT_FOUND,
+			);
 		}
-    return genre
+		return genre;
 	}
 
+	@UseGuards(JwtGuard)
 	@Get()
 	async getGenres(): Promise<Genre[]> {
 		return this.genresService.getGenres();
 	}
 
+	@UseGuards(JwtGuard)
 	@Post()
 	@HttpCode(200)
 	@UsePipes(ValidationPipe)
 	async createGenre(@Body() createGenreDto: CreateGenreDto): Promise<Genre> {
 		return this.genresService.createGenre(
 			createGenreDto.name,
-			createGenreDto.description
+			createGenreDto.description,
 		);
 	}
 
+	@UseGuards(JwtGuard)
 	@Patch(':genreId')
 	async updateGenre(
 		@Param('genreId') genreId: string,

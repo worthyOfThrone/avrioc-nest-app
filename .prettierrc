@@ -3,5 +3,5 @@
   "trailingComma": "all",
   "endOfLine": "lf",
   "semi": true,
-  "useTabs": false
+  "useTabs": true
 }
