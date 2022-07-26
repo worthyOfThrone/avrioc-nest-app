@@ -1,5 +1,23 @@
 {
-  "$schema": "https://json.schemastore.org/nest-cli",
-  "collection": "@nestjs/schematics",
-  "sourceRoot": "src"
+	"$schema": "https://json.schemastore.org/nest-cli",
+	"collection": "@nestjs/schematics",
+	"sourceRoot": "src",
+	"compilerOptions": {
+		"plugins": [
+			{
+				"name": "@nestjs/swagger",
+				"options": {
+					"dtoKeyOfComment": true,
+					"controllerKeyOfComment": true,
+					"typeFileNameSuffix": [
+						".input.ts",
+						".interfaces.ts",
+						".args.ts",
+						".entity.ts",
+						".model.ts"
+					]
+				}
+			}
+		]
+	}
 }

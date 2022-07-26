@@ -16,7 +16,7 @@ export class IsFilmExistConstraint
 	constructor(private readonly filmsService: FilmsService) {}
 
 	async validate(id: string) {
-		return !(await this.filmsService.getFilmById(id));
+		return !!(await this.filmsService.getFilmById(id));
 	}
 
 	defaultMessage(args: ValidationArguments) {

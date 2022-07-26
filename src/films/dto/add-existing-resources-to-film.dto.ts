@@ -1,8 +1,7 @@
 import { ArrayMinSize, IsMongoId, IsNotEmpty, IsObject, IsOptional } from "class-validator"
+import { Genre } from "src/genres/schemas/genre.schema";
 import { IsFilmExists } from "src/helpers/is-film-exists-validator.service";
-import { Genre } from "src/genres/schemas/genre.schema"
 import { CreateReviewDto } from "src/reviews/dto/create-review.dto";
-
 
 export class AddExistingResourcesToFilm { 
     @IsNotEmpty()

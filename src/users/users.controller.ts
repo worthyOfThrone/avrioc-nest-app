@@ -1,50 +1,140 @@
-import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Patch, Post, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import {
+	Body,
+	Controller,
+	Get,
+	HttpCode,
+	HttpException,
+	HttpStatus,
+	Param,
+	Patch,
+	Post,
+	UseGuards,
+	UsePipes,
+	ValidationPipe,
+} from '@nestjs/common';
+import {
+	ApiBadRequestResponse,
+	ApiBearerAuth,
+	ApiNotFoundResponse,
+	ApiOkResponse,
+	ApiOperation,
+	ApiTags,
+	ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
+import {
+	InternalServerError,
+	ResourceAlreadyExistsResponse,
+	ResourceNotFoundResponse,
+	UnAuthorizedResponse,
+} from 'src/auth/dto/interfaces/auth-error-interface.dto';
 import { JwtGuard } from 'src/auth/guards/jwt-guard';
-import { CreateUserDto } from './dto/create-user.dto';
+import {
+	AllUserDetailsResponse,
+	RegisterUserDto,
+	UserDetailsResponse,
+} from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from './schemas/user.schema';
-import { UserDetails } from './user-details.interface';
+import { UsersDetail } from './dto/interfaces/user-details.dto';
 import { UsersService } from './users.service';
 
+@ApiTags('User Module')
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+	constructor(private readonly usersService: UsersService) {}
 
-  @UseGuards(JwtGuard)
-  @Get(':userId')
-  async getUser(@Param('userId') userId: string): Promise<UserDetails> {
-    const user = await this.usersService.getUserById(userId);
-    if (!user) throw new HttpException(`the resource with ${userId} does not exist`, HttpStatus.NOT_FOUND);
+	@UseGuards(JwtGuard)
+	@Get(':userId')
+	@ApiBearerAuth('jwt')
+	@ApiOperation({ summary: 'get user by id' })
+	@ApiNotFoundResponse({
+		description: 'User does not exist',
+		type: ResourceNotFoundResponse,
+	})
+	@ApiOkResponse({
+		description: 'users detail',
+		type: UserDetailsResponse,
+	})
+	@ApiUnauthorizedResponse({
+		description: 'unauthorize request',
+		type: UnAuthorizedResponse,
+	})
+	async getUser(@Param('userId') userId: string): Promise<UsersDetail> {
+		const user = await this.usersService.getUserById(userId);
+		if (!user)
+			throw new HttpException(
+				`the resource with ${userId} does not exist`,
+				HttpStatus.NOT_FOUND,
+			);
 
-    return user;
-  }
+		return user;
+	}
 
-  @UseGuards(JwtGuard)
-  @Get()
-  async getUsers(): Promise<UserDetails[]> {
-    return this.usersService.getUsers();
-  }
+	@UseGuards(JwtGuard)
+	@Get()
+	@ApiBearerAuth('jwt')
+	@ApiOperation({ summary: 'get all users' })
+	@ApiOkResponse({
+		description: 'get all users',
+		type: AllUserDetailsResponse,
+	})
+	@ApiUnauthorizedResponse({
+		description: 'unauthorize request',
+		type: UnAuthorizedResponse,
+	})
+	async getUsers(): Promise<{ users: UsersDetail[] }> {
+		const users = await this.usersService.getUsers();
+		return {
+			users
+		};
+	}
 
-  @UseGuards(JwtGuard)
-  @Post()
-  @HttpCode(200)
-  @UsePipes(ValidationPipe)
-  async createUser(@Body() createUserDto: CreateUserDto): Promise<UserDetails> {
-    const user = await this.usersService.createUser(
-      createUserDto.email,
-      createUserDto.firstName,
-      createUserDto.lastName,
-      createUserDto.password,
-      createUserDto.description,
-      createUserDto.isReviewer,
-    );
-    return this.usersService._getUserDetails(user);
-  }
+	@Post()
+	@HttpCode(200)
+	@UsePipes(ValidationPipe)
+	@ApiOperation({ summary: 'create/register user' })
+	@ApiBadRequestResponse({
+		description: 'User already exists',
+		type: ResourceAlreadyExistsResponse,
+	})
+	@ApiOkResponse({
+		description: 'User registration',
+		type: UsersDetail,
+	})
+	async createUser(
+		@Body() RegisterUserDto: RegisterUserDto,
+	): Promise<UsersDetail> {
+		const user = await this.usersService.createUser(
+			RegisterUserDto.email,
+			RegisterUserDto.firstName,
+			RegisterUserDto.lastName,
+			RegisterUserDto.password,
+			RegisterUserDto.description,
+			RegisterUserDto.isReviewer,
+		);
+		return this.usersService._getUserDetails(user);
+	}
 
-  @UseGuards(JwtGuard)
-  @Patch(':userId')
-  async updateUser(@Param('userId') userId: string, @Body() updateUserDto: UpdateUserDto): Promise<UserDetails> {
-    const user = await this.usersService.updateUser(userId, updateUserDto);
-    return this.usersService._getUserDetails(user);
-  }
+	@UseGuards(JwtGuard)
+	@Patch(':userId')
+	@ApiBearerAuth('jwt')
+	@ApiOperation({ summary: 'update user details' })
+	@ApiBadRequestResponse({
+		description: 'User does not exist',
+		type: InternalServerError,
+	})
+	@ApiOkResponse({
+		description: 'User update',
+		type: UsersDetail,
+	})
+	@ApiUnauthorizedResponse({
+		description: 'unauthorize request',
+		type: UnAuthorizedResponse,
+	})
+	async updateUser(
+		@Param('userId') userId: string,
+		@Body() updateUserDto: UpdateUserDto,
+	): Promise<UsersDetail> {
+		const user = await this.usersService.updateUser(userId, updateUserDto);
+		return this.usersService._getUserDetails(user);
+	}
 }

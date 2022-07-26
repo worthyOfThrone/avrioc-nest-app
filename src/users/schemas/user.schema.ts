@@ -1,11 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { NextFunction } from 'express';
 import { Document } from 'mongoose';
-
-type Timestamps = {
-	createdAt: Date;
-	updatedAt: Date;
-};
+import { Timestamps } from 'src/helpers/interfaces/timestamp.interface';
 
 export type UserDocument = User & Document & Timestamps;
 

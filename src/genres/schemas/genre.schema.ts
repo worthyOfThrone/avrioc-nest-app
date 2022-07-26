@@ -1,11 +1,12 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from "mongoose";
+import { Timestamps } from "src/helpers/interfaces/timestamp.interface";
 
-export type GenreDocument = Genre & Document;
+export type GenreDocument = Genre & Document & Timestamps;
 
 @Schema({ collection: 'Genres', timestamps: true})
 export class Genre {
-    @Prop({ required: true })
+    @Prop({ required: true, unique: true })
     name: string;
 
     @Prop({ nullable: true })

@@ -1,14 +1,15 @@
-import { Injectable } from '@nestjs/common';
-import { User, UserDocument } from './schemas/user.schema';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { UserDocument } from './schemas/user.schema';
 import { UsersRepository } from './users.repository';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { UserDetails } from './user-details.interface';
+import { UsersDetail } from './dto/interfaces/user-details.dto';
 
 @Injectable()
 export class UsersService {
 	constructor(private readonly usersRepository: UsersRepository) {}
 
-	_getUserDetails(user: UserDocument): UserDetails {
+	_getUserDetails(user: UserDocument): UsersDetail {
+		if (!user) return;
 		return {
 			id: user._id,
 			firstName: user.firstName,
@@ -21,22 +22,22 @@ export class UsersService {
 		};
 	}
 
-	async getUserById(_id: string): Promise<UserDetails> {
+	async getUserById(_id: string): Promise<UsersDetail> {
 		const user = await this.usersRepository.findOne({ _id });
 		return this._getUserDetails(user);
 	}
 
-	async getUserByEmail(email: string): Promise<UserDocument> {
-		return await this.usersRepository.findOne({ email });
+	async getUserByEmailOrId(field: string): Promise<UserDocument> {
+		return await this.usersRepository.findOne({ field });
 	}
 
-	async userExists(emailId: string): Promise<Boolean> {
-		const user = await this.getUserByEmail(emailId);
+	async userExists(field: string): Promise<Boolean> {
+		const user = await this.getUserByEmailOrId(field);
 		if (!user) return false;
 		return true;
 	}
 
-	async getUsers(): Promise<UserDetails[]> {
+	async getUsers(): Promise<UsersDetail[]> {
 		return (await this.usersRepository.find({})).map(user => this._getUserDetails(user));
 	}
 
@@ -59,6 +60,8 @@ export class UsersService {
 	}
 
 	async updateUser(userId: string, userUpdates: UpdateUserDto): Promise<UserDocument> {
-		return await this.usersRepository.findOneAndUpdate({ id: userId }, userUpdates);
+		const user = await this.userExists(userId);
+		if (!user) throw new HttpException('User does not exist', HttpStatus.BAD_REQUEST)
+		return await this.usersRepository.findOneAndUpdate({ _id: userId }, userUpdates);
 	}
 }

@@ -21,7 +21,7 @@ export class IsUserAValidReviewerConstraint
 	}
 
 	defaultMessage(args: ValidationArguments) {
-		return `User does not have permission to add reviews`;
+		return `User is not a valid reviewer`;
 	  }
 }
 
