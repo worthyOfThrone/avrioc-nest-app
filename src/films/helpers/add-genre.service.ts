@@ -1,3 +1,6 @@
+import { Genre } from "src/genres/schemas/genre.schema";
+import { Review } from "src/reviews/schemas/review.schema";
+
 export class Resource {
 	private readonly existingResources;
 	private readonly newResources;
@@ -9,7 +12,7 @@ export class Resource {
 
 	addResources() {
 		const updates = new Set(this.existingResources);
-		this.newResources.forEach((resource) => updates.add(resource));
+		this.newResources.forEach((resource: Genre | Review) => updates.add(resource));
 		return Array.from(updates);
 	}
 }

@@ -4,16 +4,16 @@ import { Review } from "src/reviews/schemas/review.schema";
 
 export class UpdateFilmDto {
     @IsString()
-    name: string;
+    name?: string;
 
     @IsString()
-    description: string;
+    description?: string;
 
     @IsDate()
-    releaseDate: Date;
+    releaseDate?: Date;
  
     @IsString()
-    country: string;
+    country?: string;
  
     @IsString()
     photo?: string; // url

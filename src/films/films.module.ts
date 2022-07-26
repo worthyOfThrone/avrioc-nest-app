@@ -8,16 +8,22 @@ import { FilmsController } from './films.controller';
 import { FilmsRepository } from './films.repository';
 import { FilmsService } from './films.service';
 import { Film, FilmsSchema } from './schemas/film.schema';
+import { IsUserAValidReviewerConstraint } from 'src/helpers/is-reviewer-validator.service';
 
 @Module({
 	imports: [
 		MongooseModule.forFeature([{ name: Film.name, schema: FilmsSchema }]),
 		GenresModule,
 		ReviewsModule,
-		UsersModule
+		UsersModule,
 	],
 	controllers: [FilmsController],
-	providers: [FilmsService, FilmsRepository, IsFilmExistConstraint],
-	exports: [FilmsService]
+	providers: [
+		FilmsService,
+		FilmsRepository,
+		IsFilmExistConstraint,
+		IsUserAValidReviewerConstraint,
+	],
+	exports: [FilmsService],
 })
 export class FilmsModule {}

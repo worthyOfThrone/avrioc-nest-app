@@ -20,7 +20,7 @@ export class ReviewsResource {
 		const newlyCreatedResource = (await this.service.createReview(
 			this.newResource,
 		)) as ReviewDocument;
-		this.resourceId = newlyCreatedResource._id;
+		this.resourceId = newlyCreatedResource.id;
 		return newlyCreatedResource;
 	}
 
@@ -30,7 +30,7 @@ export class ReviewsResource {
 			this.newResource.filmId as Partial<Film>
 		)) as ReviewDocument;
 		if (existingReview) {
-			this.resourceId = existingReview._id;
+			this.resourceId = existingReview._id || existingReview.id;
 			return true;
 		}
 	} 

@@ -12,18 +12,38 @@ import {
 	UsePipes,
 	ValidationPipe,
 } from '@nestjs/common';
-import mongoose from 'mongoose';
+import {
+	ApiBadGatewayResponse,
+	ApiBearerAuth,
+	ApiForbiddenResponse,
+	ApiNotFoundResponse,
+	ApiOkResponse,
+	ApiOperation,
+	ApiTags,
+	ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
+import {
+	PermissionDeniedResponse,
+	ResourceNotFoundResponse,
+	UnAuthorizedResponse,
+} from 'src/auth/dto/interfaces/auth-error-interface.dto';
 import { JwtGuard } from 'src/auth/guards/jwt-guard';
-import { JwtStrategy } from 'src/auth/guards/jwt.strategy';
+import { FilmsDetail } from 'src/films/dto/interfaces/film-interface.dto';
 import { FilmsService } from 'src/films/films.service';
 import { FilmsDocument } from 'src/films/schemas/film.schema';
 import { UserDocument } from 'src/users/schemas/user.schema';
 import { UsersService } from 'src/users/users.service';
-import { CreateReviewDto } from './dto/create-review.dto';
+import {
+	AllReviewsDetailResponse,
+	CreateReviewDto,
+	ReviewDetailsResponse,
+} from './dto/create-review.dto';
+import { ReviewsDetail } from './dto/interfaces/review-interface.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { ReviewsService } from './reviews.service';
 import { Review } from './schemas/review.schema';
 
+@ApiTags('Review Module')
 @Controller('reviews')
 export class ReviewsController {
 	constructor(
@@ -34,7 +54,21 @@ export class ReviewsController {
 
 	@UseGuards(JwtGuard)
 	@Get(':reviewId')
-	async getReview(@Param('reviewId') reviewId: string): Promise<Review> {
+	@ApiOperation({ summary: 'get review by id' })
+	@ApiBearerAuth('jwt')
+	@ApiNotFoundResponse({
+		description: 'review does not exist',
+		type: ResourceNotFoundResponse,
+	})
+	@ApiOkResponse({
+		description: 'review of respective id',
+		type: ReviewDetailsResponse,
+	})
+	@ApiUnauthorizedResponse({
+		description: 'unauthorize request',
+		type: UnAuthorizedResponse,
+	})
+	async getReview(@Param('reviewId') reviewId: string): Promise<ReviewsDetail> {
 		const review = this.reviewsService.getReviewById(reviewId);
 		if (!review)
 			throw new HttpException(
@@ -46,22 +80,54 @@ export class ReviewsController {
 
 	@UseGuards(JwtGuard)
 	@Get('byReviewerId/:reviewerId')
+	@ApiOperation({ summary: "get review by reviewer's id" })
+	@ApiBearerAuth('jwt')
+	@ApiNotFoundResponse({
+		description: 'review does not exist',
+		type: ResourceNotFoundResponse,
+	})
+	@ApiOkResponse({
+		description: 'review details array',
+		type: ReviewDetailsResponse,
+	})
+	@ApiUnauthorizedResponse({
+		description: 'unauthorize request',
+		type: UnAuthorizedResponse,
+	})
 	async getReviewByReviewerId(
 		@Param('reviewerId') reviewerId: string,
-	): Promise<Review[]> {
-		const review = await this.reviewsService.getReviewsbyReviewerId(reviewerId);
-		if (!review) {
+	): Promise<{ reviews: ReviewsDetail[] }> {
+		const reviews = await this.reviewsService.getReviewsbyReviewerId(
+			reviewerId,
+		);
+		if (!reviews) {
 			throw new HttpException(
 				`the resource with ${reviewerId} does not exist`,
 				HttpStatus.NOT_FOUND,
 			);
 		}
-		return review;
+		return { reviews };
 	}
 
 	@UseGuards(JwtGuard)
 	@Get('byFilmId/:filmId')
-	async getReviewByFilmId(@Param('filmId') filmId: string): Promise<Review[]> {
+	@ApiOperation({ summary: 'get review by film id' })
+	@ApiBearerAuth('jwt')
+	@ApiNotFoundResponse({
+		description: 'review does not exist',
+		type: ResourceNotFoundResponse,
+	})
+	@ApiOkResponse({
+		description: 'review details array',
+		type: ReviewDetailsResponse,
+	})
+	@ApiUnauthorizedResponse({
+		description: 'unauthorize request',
+		type: UnAuthorizedResponse,
+	})
+	async getReviewByFilmId(
+		@Param('filmId') filmId: string,
+	): Promise<{ reviews: ReviewsDetail[] }> {
 		const reviews = await this.reviewsService.getReviewsbyFilmId(filmId);
 		if (!reviews) {
 			throw new HttpException(
@@ -69,19 +135,46 @@ export class ReviewsController {
 				HttpStatus.NOT_FOUND,
 			);
 		}
-		return reviews;
+		return { reviews };
 	}
 
 	@UseGuards(JwtGuard)
 	@Get()
-	async getReviews(): Promise<Review[]> {
-		return this.reviewsService.getReviews();
+	@ApiOperation({ summary: 'get all reviews' })
+	@ApiBearerAuth('jwt')
+	@ApiOkResponse({
+		description: 'review details array',
+		type: AllReviewsDetailResponse,
+	})
+	@ApiUnauthorizedResponse({
+		description: 'unauthorize request',
+		type: UnAuthorizedResponse,
+	})
+	async getReviews(): Promise<{ reviews: Review[] }> {
+		const reviews = await this.reviewsService.getReviews();
+		return {
+			reviews,
+		};
 	}
 
 	@UseGuards(JwtGuard)
 	@Post()
 	@HttpCode(200)
 	@UsePipes(ValidationPipe)
+	@ApiOperation({ summary: 'create reviews' })
+	@ApiBearerAuth('jwt')
+	@ApiForbiddenResponse({
+		description: 'permission to write/create review is denied',
+		type: PermissionDeniedResponse,
+	})
+	@ApiOkResponse({
+		description: 'review is created',
+		type: ReviewDetailsResponse,
+	})
+	@ApiUnauthorizedResponse({
+		description: 'unauthorize request',
+		type: UnAuthorizedResponse,
+	})
 	async createReview(
 		@Body() createReviewDto: CreateReviewDto,
 	): Promise<Review> {
@@ -90,23 +183,40 @@ export class ReviewsController {
 			createReviewDto.reviewerId,
 		)) as UserDocument;
 		if (!user && !user.isReviewer) {
-			throw new HttpException('permission to write review is denied', HttpStatus.FORBIDDEN);
+			throw new HttpException(
+				'permission to write review is denied',
+				HttpStatus.FORBIDDEN,
+			);
 		}
 
 		// create only if a film id is valid
-		const film = (await this.filmsService.getFilmById(
-			createReviewDto.filmId,
-		)) as FilmsDocument;
+		const film = await this.filmsService.getFilmById(createReviewDto.filmId);
 		if (!film) {
-			throw new HttpException('permission to write review is denied', HttpStatus.FORBIDDEN);
+			throw new HttpException(
+				'the film to write review does not exists',
+				HttpStatus.FORBIDDEN,
+			);
 		}
-		createReviewDto.filmId = film._id;
 
 		return this.reviewsService.createReview(createReviewDto);
 	}
 
 	@UseGuards(JwtGuard)
 	@Patch(':reviewId')
+	@ApiOperation({ summary: 'update a review' })
+	@ApiBearerAuth('jwt')
+	@ApiBadGatewayResponse({
+		description: 'the review does not exists',
+		type: ResourceNotFoundResponse,
+	})
+	@ApiOkResponse({
+		description: 'review is updated',
+		type: ReviewDetailsResponse,
+	})
+	@ApiUnauthorizedResponse({
+		description: 'unauthorize request',
+		type: UnAuthorizedResponse,
+	})
 	async updateReview(
 		@Param('reviewId') reviewId: string,
 		@Body() updateReviewDto: UpdateReviewDto,
