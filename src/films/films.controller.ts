@@ -83,14 +83,14 @@ export class FilmsController {
 	@UseGuards(JwtGuard)
 	@Get('byName/:filmName')
 	@ApiBearerAuth('jwt')
-	@ApiOperation({ summary: 'get film by name' })
+	@ApiOperation({ summary: 'get a film by name' })
 	@ApiNotFoundResponse({
 		description: 'film does not exist',
 		type: ResourceNotFoundResponse,
 	})
 	@ApiOkResponse({
 		description: 'film detail of respective name',
-		type: AllFilmDetailsResponse,
+		type: FilmsDetail,
 	})
 	@ApiUnauthorizedResponse({
 		description: 'unauthorize request',
@@ -98,15 +98,15 @@ export class FilmsController {
 	})
 	async getFilmByName(
 		@Param('filmName') filmName: string,
-	): Promise<AllFilmDetailsResponse> {
-		const films = await this.filmsService.getFilmsbyFilmName(filmName);
-		if (!films) {
+	): Promise<FilmsDetail> {
+		const film = await this.filmsService.getFilmbyName(filmName);
+		if (!film) {
 			throw new HttpException(
 				`the resource with name ${filmName} does not exist`,
 				HttpStatus.NOT_FOUND,
 			);
 		}
-		return { films };
+		return film;
 	}
 
 	@UseGuards(JwtGuard)
@@ -213,7 +213,7 @@ export class FilmsController {
 			}
 			review.filmId = filmId;
 		}
-		if (!review.filmId || !review.reviewerId || !review.rating) {
+		if (review && (!review.filmId || !review.reviewerId || !review.rating)) {
 			throw new HttpException(
 				`the review object does not comply with its type`,
 				HttpStatus.BAD_REQUEST,
