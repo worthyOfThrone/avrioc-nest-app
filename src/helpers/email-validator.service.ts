@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import {
 	registerDecorator,
 	ValidationArguments,
@@ -6,6 +6,7 @@ import {
 	ValidatorConstraint,
 	ValidatorConstraintInterface,
 } from 'class-validator';
+import { loggerMessages } from 'src/lib/logger';
 import { UsersService } from 'src/users/users.service';
 
 @ValidatorConstraint({ name: 'isEmailUserAlreadyExist', async: true })
@@ -13,6 +14,8 @@ import { UsersService } from 'src/users/users.service';
 export class IsEmailUserAlreadyExistConstraint
 	implements ValidatorConstraintInterface
 {
+	private readonly logger = new Logger('IsEmailUserAlreadyExistConstraint');
+
 	constructor(private readonly usersService: UsersService) {}
 
 	async validate(text: string) {
@@ -20,7 +23,10 @@ export class IsEmailUserAlreadyExistConstraint
 	}
 
 	defaultMessage(args: ValidationArguments) {
-		return `User already exist`;
+		this.logger.log(
+			`[IsEmailUserAlreadyExistConstraint]: ${loggerMessages.ALREADY_EXISTS} ${JSON.stringify(args.value)}`,
+		);
+		return  `The user with id ${args.value} already exists`;
 	  }
 }
 

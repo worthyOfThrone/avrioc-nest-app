@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import {
 	registerDecorator,
 	ValidationArguments,
@@ -7,12 +7,15 @@ import {
 	ValidatorConstraintInterface,
 } from 'class-validator';
 import { FilmsService } from 'src/films/films.service';
+import { loggerMessages } from 'src/lib/logger';
 
 @ValidatorConstraint({ name: 'isFilmExists', async: true })
 @Injectable()
 export class IsFilmExistConstraint
 	implements ValidatorConstraintInterface
 {
+	private readonly logger = new Logger('IsFilmExistConstraint');
+
 	constructor(private readonly filmsService: FilmsService) {}
 
 	async validate(id: string) {
@@ -20,7 +23,10 @@ export class IsFilmExistConstraint
 	}
 
 	defaultMessage(args: ValidationArguments) {
-		return `The resource with id ${args.value} does not exists`;
+		this.logger.log(
+			`[IsFilmExistConstraint]: ${loggerMessages.NOT_FOUND} ${JSON.stringify(args.value)}`,
+		);
+		return `The film with id ${args.value} does not exists`;
     }
 }
 
