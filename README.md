@@ -62,6 +62,23 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
+## Notes for consideration
+
+- The phot string can be saved in film module, and stored in a bucket (Amazon S3, Google) to have a robust service.
+
+## env file template
+
+- mongodb uri contains the path to connect to mongodb database
+- you can use any avialble port to run this api on your local
+- add a difficult secret-key that will be used in jwt strategy to sign the token
+
+```
+e.g.
+MONGODB_URI= mongodb+srv://<your-user>:<your-password>@my-cluster.bahwy.mongodb.net/<your-collection-name>?retryWrites=true&w=majority
+PORT= 3000
+SECRET_KEY= <your-secret-key>
+```
+
 ## Swagger Open Specification API
 
 Swagger specification can be found in this path `<PUBLIC-HOSTING-URL>/api/v1`, visit this to get more information of the restful API with detailed input, output, or respective error messages for each available path.
@@ -117,3 +134,38 @@ In the above command, update the checks ---replace-id or --drop-database accordi
 ## testing
 
 the testing library implementing jest with nestjs is pending.
+
+## Migration
+
+Basic migration setup is created to run migrations. it is necessary to write migrations to do any database change (alter table, or creation, deletion of table or indexes).
+TODO: using migrations, create indexes on unique columns (id, name)
+
+## opportunity to enhance the system
+
+There are a couple of things that can be implemented to enhance the application before moving to production. Some of them are listed here:
+
+- adding Delete methos to delete them for all modules
+- handlign the change user password
+- extending the email validations to allow a strict email address
+- writing test cases
+
+and some more...
+
+- use migration to create indexes on unique columns (id, name, etc)
+- extend logger service to use winston to enhance logging
+- add global configured error status code and messages
+- make use of dto and controller comment to reduce some swagger-api decorator
+- add more functionality or extend the schema to have more details/columns of a collection
+- replace the static country column into it's own separate module
+
+## Contributing
+
+New features and bugfixes are always welcome! In order to contribute to this project, follow a few easy steps:
+
+- Fork this repository and clone it on your machine
+- Open the local repository with Visual Studio Code with the remote development feature enabled (install the Remote Development extension)
+- Create a branch my-awesome-feature and commit to it
+- Run npm run lint, npm run test (to be implemented) and npm run build and verify that they complete without errors
+- Push my-awesome-feature branch to GitHub and open a pull request
+
+## Thank you for your time!
