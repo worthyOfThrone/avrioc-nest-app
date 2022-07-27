@@ -114,7 +114,7 @@ To seed some exemplary data, mongo-seeding npm package is used. Tips to run the
 
 Note: we can easily extend this service by adding appropriate package.json script, to seed/delete the data as per environment (dev, staging or production) when in production.
 
-aidditonal information can be found here:
+Import data definition guide can be found here:
 
 ```
 https://github.com/pkosiec/mongo-seeding/blob/main/docs/import-data-definition.md
@@ -129,7 +129,11 @@ To run the seeder through mongo-seeding-cli, install the package globally and ru
 npx seed --replace-id --set-timestamps --db-name films src/\_\_seedData
 ```
 
-In the above command, update the checks ---replace-id or --drop-database according to your need.
+In the above command, update the checks ---replace-id or --drop-database according to your need. more arguments to the seed comamnd can be found here:
+
+```
+https://github.com/pkosiec/mongo-seeding/blob/main/cli/README.md
+```
 
 ## testing
 
