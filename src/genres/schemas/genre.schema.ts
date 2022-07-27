@@ -4,7 +4,7 @@ import { Timestamps } from "src/helpers/interfaces/timestamp.interface";
 
 export type GenreDocument = Genre & Document & Timestamps;
 
-@Schema({ collection: 'Genres', timestamps: true})
+@Schema({ collection: 'genres', timestamps: true})
 export class Genre {
     @Prop({ required: true, unique: true })
     name: string;

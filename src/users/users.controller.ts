@@ -88,31 +88,6 @@ export class UsersController {
 		};
 	}
 
-	@Post()
-	@HttpCode(200)
-	@UsePipes(ValidationPipe)
-	@ApiOperation({ summary: 'create/register user' })
-	@ApiBadRequestResponse({
-		description: 'User already exists',
-		type: ResourceAlreadyExistsResponse,
-	})
-	@ApiOkResponse({
-		description: 'User registration',
-		type: UsersDetail,
-	})
-	async createUser(
-		@Body() RegisterUserDto: RegisterUserDto,
-	): Promise<UsersDetail> {
-		const user = await this.usersService.createUser(
-			RegisterUserDto.email,
-			RegisterUserDto.firstName,
-			RegisterUserDto.lastName,
-			RegisterUserDto.password,
-			RegisterUserDto.description,
-			RegisterUserDto.isReviewer,
-		);
-		return this.usersService._getUserDetails(user);
-	}
 
 	@UseGuards(JwtGuard)
 	@Patch(':userId')

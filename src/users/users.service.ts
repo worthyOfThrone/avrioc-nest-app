@@ -4,6 +4,7 @@ import { UsersRepository } from './users.repository';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersDetail } from './dto/interfaces/user-details.dto';
 import { loggerMessages } from 'src/lib/logger';
+import mongoose, { isValidObjectId, ObjectId } from 'mongoose';
 
 @Injectable()
 export class UsersService {
@@ -34,8 +35,12 @@ export class UsersService {
 		return this._getUserDetails(user);
 	}
 
-	async getUserByEmailOrId(field: string): Promise<UserDocument> {
-		const user = await this.usersRepository.findOne({ field });
+	async getUserByEmailOrId(field: string | ObjectId): Promise<UserDocument> {
+		const fieldName = isValidObjectId(field) ? '_id' : 'email';
+		// test email id
+		// const regex = new RegExp('[a-z0-9]+@[a-z]+\.[a-z]{2,3}');
+
+		const user = await this.usersRepository.findOne({ [fieldName]: field });
 		const logMessage = user
 			? loggerMessages.GENERIC + JSON.stringify(this._getUserDetails(user))
 			: `${loggerMessages.NOT_FOUND} ${field}`;
@@ -44,7 +49,7 @@ export class UsersService {
 		return user;
 	}
 
-	async userExists(field: string): Promise<Boolean> {
+	async userExists(field: string | ObjectId): Promise<Boolean> {
 		const user = await this.getUserByEmailOrId(field);
 		if (!user) {
 			this.logger.log(`[userExists]: ${loggerMessages.NOT_FOUND} ${field}`);
@@ -92,7 +97,7 @@ export class UsersService {
 		userId: string,
 		userUpdates: UpdateUserDto,
 	): Promise<UserDocument> {
-		const user = await this.userExists(userId);
+		const user = await this.userExists(userId as unknown as ObjectId);
 		if (!user) {
 			this.logger.log(
 				`[updateUser]: ${loggerMessages.NOT_FOUND} ${JSON.stringify(userId)}`,

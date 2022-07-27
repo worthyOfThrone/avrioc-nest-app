@@ -19,7 +19,7 @@ export class IsEmailUserAlreadyExistConstraint
 	constructor(private readonly usersService: UsersService) {}
 
 	async validate(text: string) {
-		return !(await this.usersService.userExists(text));
+		return !(await this.usersService.userExists(text as string));
 	}
 
 	defaultMessage(args: ValidationArguments) {
