@@ -178,17 +178,6 @@ export class ReviewsController {
 	async createReview(
 		@Body() createReviewDto: CreateReviewDto,
 	): Promise<Review> {
-		// create only if a user is reviewer
-		const user = (await this.usersService.getUserById(
-			createReviewDto.reviewerId,
-		)) as UserDocument;
-		if (!user && !user.isReviewer) {
-			throw new HttpException(
-				'permission to write review is denied',
-				HttpStatus.FORBIDDEN,
-			);
-		}
-
 		// create only if a film id is valid
 		const film = await this.filmsService.getFilmById(createReviewDto.filmId);
 		if (!film) {

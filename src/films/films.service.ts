@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { Genre } from 'src/genres/schemas/genre.schema';
 import { Review } from 'src/reviews/schemas/review.schema';
 import { Resource } from './helpers/add-genre.service';
@@ -11,9 +11,12 @@ import { ReviewsResource } from './helpers/add-reviews.service';
 import { ReviewsService } from 'src/reviews/reviews.service';
 import { CreateReviewDto } from 'src/reviews/dto/create-review.dto';
 import { FilmsDetail } from './dto/interfaces/film-interface.dto';
+import { loggerMessages } from 'src/lib/logger';
 
 @Injectable()
 export class FilmsService {
+	private readonly logger = new Logger(FilmsService.name);
+
 	constructor(
 		private readonly filmsRepository: FilmsRepository,
 		private readonly reviewsService: ReviewsService,
@@ -36,34 +39,56 @@ export class FilmsService {
 
 	async getFilmById(_id: string): Promise<FilmsDetail> | null {
 		const film = await this.filmsRepository.findOne({ _id });
-		if (!film) return null;
+		if (!film) {
+			this.logger.log(
+				`[getFilmById]: ${loggerMessages.NOT_FOUND} ${JSON.stringify(_id)}`,
+			);
+			return null;
+		}
 
 		await film.populate(['reviews', 'genres']);
+		this.logger.log(
+			`[getFilmById]: ${loggerMessages.FOUND} ${JSON.stringify(film)}`,
+		);
 		return this._getFilmsDetail(film);
 	}
 
-	async getFilmsbyFilmName(name: string): Promise<FilmsDetail[]> {
-		const films = await this.filmsRepository.find({ name }, [
+	async getFilmbyName(name: string): Promise<FilmsDetail> {
+		const film = await (await this.filmsRepository.findOne({ name })).populate([
 			'reviews',
 			'genres',
 		]);
-		return films.map((film) => this._getFilmsDetail(film));
+		this.logger.log(
+			`[getFilmbyName]: ${loggerMessages.FOUND} ${JSON.stringify(film)}`,
+		);
+		return this._getFilmsDetail(film);
 	}
 
 	async getFilms(): Promise<FilmsDetail[]> {
 		const films = await this.filmsRepository.find({}, ['reviews', 'genres']);
+		this.logger.log(
+			`[getFilms]: ${loggerMessages.GENERIC_PLURAL} ${JSON.stringify(films)}`,
+		);
 		return films.map((film) => this._getFilmsDetail(film));
 	}
 
 	async createFilm(createFilmDto: CreateFilmDto): Promise<FilmsDetail> {
 		const { name } = createFilmDto;
-		const existingFilm = await this.getFilmsbyFilmName(name);
-		if (existingFilm.length)
+		const existingFilm = await this.getFilmbyName(name);
+		if (existingFilm) {
+			this.logger.log(
+				`[createFilm]: ${loggerMessages.ALREADY_EXISTS} ${JSON.stringify(existingFilm)}`,
+			);
 			throw new HttpException(
 				`cannot create the existing film with ${name}`,
 				HttpStatus.BAD_REQUEST,
 			);
+
+		}
 		const film = await this.filmsRepository.create(createFilmDto);
+		this.logger.log(
+			`[createFilm]: ${loggerMessages.CREATED} ${JSON.stringify(film)}`,
+		);
 		return this._getFilmsDetail(film);
 	}
 
@@ -74,7 +99,12 @@ export class FilmsService {
 				`the resource with id ${filmId} does not exists`,
 				HttpStatus.BAD_REQUEST,
 			);
-		return this.filmsRepository.findOneAndUpdate({ _id: filmId }, filmUpdates);
+
+		const updatedFilm = await this.filmsRepository.findOneAndUpdate({ _id: filmId }, filmUpdates);
+		this.logger.log(
+			`[updateFilm]: ${loggerMessages.UPDATED} ${JSON.stringify(updatedFilm)}`,
+		);
+		return updatedFilm;
 	}
 
 	async addResourcesToFilm(
@@ -102,7 +132,6 @@ export class FilmsService {
 			if (existingFilm && existingFilm.reviews.length && isExisted) {
 				// update the review
 				await reviewsResource.updateResources();
-
 			} else {
 				// add the reviews
 				(await reviewsResource.createResources()) as Review;
@@ -126,9 +155,11 @@ export class FilmsService {
 		);
 
 		await finalResult.populate(['reviews', 'genres']);
+		this.logger.log(
+			`[addResourcesToFilm]: ${loggerMessages.UPDATED} ${JSON.stringify(finalResult)}`,
+		);
 		return this._getFilmsDetail(finalResult);
 	}
 
-	// NEXT steps: update the above function to extend it for other resource
 	// add remove resource function
 }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import {
 	registerDecorator,
 	ValidationArguments,
@@ -6,6 +6,7 @@ import {
 	ValidatorConstraint,
 	ValidatorConstraintInterface,
 } from 'class-validator';
+import { loggerMessages } from 'src/lib/logger';
 import { UsersService } from 'src/users/users.service';
 
 @ValidatorConstraint({ name: 'isUserAValidReviewer', async: true })
@@ -13,6 +14,8 @@ import { UsersService } from 'src/users/users.service';
 export class IsUserAValidReviewerConstraint
 	implements ValidatorConstraintInterface
 {
+	private readonly logger = new Logger('IsUserAValidReviewerConstraint');
+
 	constructor(private readonly usersService: UsersService) {}
 
 	async validate(id: string) {
@@ -21,7 +24,10 @@ export class IsUserAValidReviewerConstraint
 	}
 
 	defaultMessage(args: ValidationArguments) {
-		return `User is not a valid reviewer`;
+		this.logger.log(
+			`[IsUserAValidReviewerConstraint]: ${loggerMessages.FORBIDDON} ${JSON.stringify(args.value)}`,
+		);
+		return `the user is not a valid reviewer`;
 	  }
 }
 
