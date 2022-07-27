@@ -19,15 +19,19 @@ export class IsEmailUserAlreadyExistConstraint
 	constructor(private readonly usersService: UsersService) {}
 
 	async validate(text: string) {
-		return !(await this.usersService.userExists(text));
+		if (text !== '') {
+			return !(await this.usersService.userExists(text, true));
+		}
 	}
 
 	defaultMessage(args: ValidationArguments) {
 		this.logger.log(
-			`[IsEmailUserAlreadyExistConstraint]: ${loggerMessages.ALREADY_EXISTS} ${JSON.stringify(args.value)}`,
+			`[IsEmailUserAlreadyExistConstraint]: ${
+				loggerMessages.ALREADY_EXISTS
+			} ${JSON.stringify(args.value)}`,
 		);
-		return  `The user with id ${args.value} already exists`;
-	  }
+		return `The user with id ${args.value} already exists`;
+	}
 }
 
 export function IsEmailUserAlreadyExist(validationOptions?: ValidationOptions) {

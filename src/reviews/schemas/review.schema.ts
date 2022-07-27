@@ -6,7 +6,7 @@ import { User } from 'src/users/schemas/user.schema';
 
 export type ReviewDocument = Review & Document & Timestamps;
 
-@Schema({ collection: 'Reviews', timestamps: true })
+@Schema({ collection: 'reviews', timestamps: true })
 export class Review {
   @Prop({ required: true })
   rating: number;

@@ -4,6 +4,7 @@ import { UsersRepository } from './users.repository';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersDetail } from './dto/interfaces/user-details.dto';
 import { loggerMessages } from 'src/lib/logger';
+import mongoose, { isValidObjectId, ObjectId } from 'mongoose';
 
 @Injectable()
 export class UsersService {
@@ -34,18 +35,37 @@ export class UsersService {
 		return this._getUserDetails(user);
 	}
 
-	async getUserByEmailOrId(field: string): Promise<UserDocument> {
-		const user = await this.usersRepository.findOne({ field });
+	async getUserByEmail(field: string | ObjectId): Promise<UserDocument> {
+		// const fieldName = isValidObjectId(field) ? '_id' : 'email';
+		// test email id
+		// const regex = new RegExp('[a-z0-9]+@[a-z]+\.[a-z]{2,3}');
+
+		const user = await this.usersRepository.findOne({ email: field });
 		const logMessage = user
 			? loggerMessages.GENERIC + JSON.stringify(this._getUserDetails(user))
 			: `${loggerMessages.NOT_FOUND} ${field}`;
 
-		this.logger.log(`[getUserByEmailOrId]: ${logMessage}`);
+		this.logger.log(`[getUserByEmail]: ${logMessage}`);
 		return user;
 	}
 
-	async userExists(field: string): Promise<Boolean> {
-		const user = await this.getUserByEmailOrId(field);
+	/**
+	 * 
+	 * @param field email-string or id-ObjectId
+	 * @param searchByEmail default to false, true to call userExistsbyEmail
+	 * @returns Boolean
+	 */
+	async userExists(
+		field: string,
+		searchByEmail: boolean = false,
+	): Promise<Boolean> {
+		let user;
+		if (searchByEmail) {
+			user = await this.getUserByEmail(field);
+		} else {
+			user = await this.getUserById(field);
+
+		}
 		if (!user) {
 			this.logger.log(`[userExists]: ${loggerMessages.NOT_FOUND} ${field}`);
 			return false;
@@ -92,7 +112,7 @@ export class UsersService {
 		userId: string,
 		userUpdates: UpdateUserDto,
 	): Promise<UserDocument> {
-		const user = await this.userExists(userId);
+		const user = await this.userExists(userId, false);
 		if (!user) {
 			this.logger.log(
 				`[updateUser]: ${loggerMessages.NOT_FOUND} ${JSON.stringify(userId)}`,

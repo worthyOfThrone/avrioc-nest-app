@@ -10,7 +10,7 @@ import { Film, FilmsDocument } from './schemas/film.schema';
 import { ReviewsResource } from './helpers/add-reviews.service';
 import { ReviewsService } from 'src/reviews/reviews.service';
 import { CreateReviewDto } from 'src/reviews/dto/create-review.dto';
-import { FilmsDetail } from './dto/interfaces/film-interface.dto';
+import { fieldsToPopulateFilmObject, FilmsDetail } from './dto/interfaces/film-interface.dto';
 import { loggerMessages } from 'src/lib/logger';
 
 @Injectable()
@@ -45,8 +45,11 @@ export class FilmsService {
 			);
 			return null;
 		}
+		let populateWith = [];
+		if (film.genres) populateWith.push(fieldsToPopulateFilmObject.genres)
+		if (film.reviews) populateWith.push(fieldsToPopulateFilmObject.reviews)
+		await film.populate(populateWith);
 
-		await film.populate(['reviews', 'genres']);
 		this.logger.log(
 			`[getFilmById]: ${loggerMessages.FOUND} ${JSON.stringify(film)}`,
 		);
@@ -54,10 +57,19 @@ export class FilmsService {
 	}
 
 	async getFilmbyName(name: string): Promise<FilmsDetail> {
-		const film = await (await this.filmsRepository.findOne({ name })).populate([
-			'reviews',
-			'genres',
-		]);
+		const film = await (await this.filmsRepository.findOne({ name }));
+		if (!film) {
+			this.logger.log(
+				`[getFilmbyName]: ${loggerMessages.NOT_FOUND} ${JSON.stringify(name)}`,
+			);
+			return null;
+		}
+
+		let populateWith = [];
+		if (film.genres) populateWith.push(fieldsToPopulateFilmObject.genres)
+		if (film.reviews) populateWith.push(fieldsToPopulateFilmObject.reviews)
+		await film.populate(populateWith);
+
 		this.logger.log(
 			`[getFilmbyName]: ${loggerMessages.FOUND} ${JSON.stringify(film)}`,
 		);
@@ -154,7 +166,11 @@ export class FilmsService {
 			filmWithResources,
 		);
 
-		await finalResult.populate(['reviews', 'genres']);
+		let populateWith = [];
+		if (finalResult.genres) populateWith.push(fieldsToPopulateFilmObject.genres)
+		if (finalResult.reviews) populateWith.push(fieldsToPopulateFilmObject.reviews)
+		await finalResult.populate(populateWith);
+
 		this.logger.log(
 			`[addResourcesToFilm]: ${loggerMessages.UPDATED} ${JSON.stringify(finalResult)}`,
 		);

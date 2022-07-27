@@ -151,7 +151,7 @@ export class FilmsController {
 		}
 
 		const genresResources = new VerifyResource(this.genresService);
-		const allGenresVerified: boolean = genresResources.verifyResource(genres);
+		const allGenresVerified: boolean = await genresResources.verifyResource(genres);
 
 		// TODO: do we want to add existing reviews or create review when film is created??
 		// const reviewsResources = new VerifyResource(this.reviewsService);

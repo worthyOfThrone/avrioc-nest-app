@@ -7,7 +7,7 @@ import { Review } from 'src/reviews/schemas/review.schema';
 
 export type FilmsDocument = Film & Document & Timestamps;
 
-@Schema({ collection: 'Films', timestamps: true })
+@Schema({ collection: 'films', timestamps: true })
 export class Film {
 	@Prop({ require: true, unique: true })
 	name: string;
