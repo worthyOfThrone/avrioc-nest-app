@@ -129,7 +129,7 @@ export class ReviewsService {
 			});
 			if (isFilmReviewed)
 				this.logger.log(
-					`[createReview]: ${loggerMessages.FORBIDDON} ${JSON.stringify(createReviewDto.reviewerId)}`,
+					`[createReview]: ${loggerMessages.ALREADY_EXISTS} ${JSON.stringify(createReviewDto.reviewerId)}`,
 				);
 				throw new HttpException(
 					`the reviewer ${createReviewDto.reviewerId} cannot create another review for the same film`,
