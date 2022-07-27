@@ -21,7 +21,7 @@ export class AuthService {
 
 	async register(user: Readonly<RegisterUserDto>): Promise<UsersDetail | null> {
 		const { description, email, firstName, isReviewer, lastName } = user;
-		const isUserExists = await this.usersService.userExists(email as string);
+		const isUserExists = await this.usersService.userExists(email, true);
 
 		if (isUserExists)
 			throw new HttpException('User already exists', HttpStatus.FORBIDDEN);
@@ -50,7 +50,7 @@ export class AuthService {
 		email: string,
 		password: string,
 	): Promise<UsersDetail | null> {
-		const user = await this.usersService.getUserByEmailOrId(email);
+		const user = await this.usersService.getUserByEmail(email);
 		const doesUserExists = !!user;
 
 		if (!doesUserExists) return null;

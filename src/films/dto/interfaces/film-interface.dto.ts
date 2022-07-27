@@ -14,3 +14,8 @@ export class FilmsDetail {
 	updatedAt: Date;
 	createdAt: Date;
 }
+
+export enum fieldsToPopulateFilmObject {
+	reviews = 'reviews',
+	genres = 'genres',
+}

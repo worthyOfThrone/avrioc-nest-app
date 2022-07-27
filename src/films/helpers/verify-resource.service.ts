@@ -5,11 +5,11 @@ export class VerifyResource {
 		this.service = service;
 	}
 
-	verifyResource(resources) {
+	async verifyResource(resources) {
 		let allObjectIdsVerified = true;
 		if (resources && resources.length) {
-			allObjectIdsVerified = resources.every((resourceId) => {
-				const resource = this.service.resourceExistById(resourceId);
+			allObjectIdsVerified = await resources.every(async (resourceId) => {
+				const resource = await this.service.resourceExistById(resourceId);
 				if (resource) return true;
 				return false;
 			});

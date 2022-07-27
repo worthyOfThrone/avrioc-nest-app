@@ -18,9 +18,11 @@ export class IsUserAValidReviewerConstraint
 
 	constructor(private readonly usersService: UsersService) {}
 
-	async validate(id: string) {
-		const user = await this.usersService.getUserById(id);
-		return user && user.isReviewer;
+	async validate(_id: string) {
+		if (_id !== "") {
+			const user = await this.usersService.getUserById(_id);
+			return user && user.isReviewer;
+		}
 	}
 
 	defaultMessage(args: ValidationArguments) {

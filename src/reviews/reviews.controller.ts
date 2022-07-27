@@ -69,7 +69,7 @@ export class ReviewsController {
 		type: UnAuthorizedResponse,
 	})
 	async getReview(@Param('reviewId') reviewId: string): Promise<ReviewsDetail> {
-		const review = this.reviewsService.getReviewById(reviewId);
+		const review = await this.reviewsService.getReviewById(reviewId);
 		if (!review)
 			throw new HttpException(
 				`the resource with ${reviewId} does not exist`,
@@ -178,6 +178,13 @@ export class ReviewsController {
 	async createReview(
 		@Body() createReviewDto: CreateReviewDto,
 	): Promise<Review> {
+		console.log(createReviewDto);
+		if (createReviewDto.reviewerId === "") {
+			throw new HttpException(
+				'reviewer id is required',
+				HttpStatus.FORBIDDEN,
+			);
+		}
 		// create only if a film id is valid
 		const film = await this.filmsService.getFilmById(createReviewDto.filmId);
 		if (!film) {

@@ -1,0 +1,70 @@
+[
+	{
+		"_id": {
+			"$oid": "62dac703b516ee008c34017c"
+		},
+		"name": "action",
+		"description": "this contains action movies",
+		"createdAt": {
+			"$date": {
+				"$numberLong": "1658956389265"
+			}
+		},
+		"updatedAt": {
+			"$date": {
+				"$numberLong": "1658956389265"
+			}
+		}
+	},
+	{
+		"_id": {
+			"$oid": "62dac8bb62e1ad02d28f6f55"
+		},
+		"name": "comedy",
+		"description": "this is comedy",
+		"createdAt": {
+			"$date": {
+				"$numberLong": "1658956389265"
+			}
+		},
+		"updatedAt": {
+			"$date": {
+				"$numberLong": "1658956389265"
+			}
+		}
+	},
+	{
+		"_id": {
+			"$oid": "62dac9f11f2511ccb354da4a"
+		},
+		"name": "thriller",
+		"description": "it is an thriller genre",
+		"createdAt": {
+			"$date": {
+				"$numberLong": "1658956389265"
+			}
+		},
+		"updatedAt": {
+			"$date": {
+				"$numberLong": "1658956389265"
+			}
+		}
+	},
+	{
+		"_id": {
+			"$oid": "62dc7418bd00eec53ab16a16"
+		},
+		"name": "drama",
+		"description": "this contains dramatic movies",
+		"createdAt": {
+			"$date": {
+				"$numberLong": "1658956389265"
+			}
+		},
+		"updatedAt": {
+			"$date": {
+				"$numberLong": "1658956389265"
+			}
+		}
+	}
+]
