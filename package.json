@@ -10,7 +10,7 @@
 		"npm": ">= 6.11.3"
 	},
 	"scripts": {
-		"prebuild": "rimraf dist && yarn install",
+		"prebuild": "rimraf dist",
 		"build": "nest build",
 		"format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
 		"seed": "node \"src/seeder/index.ts\"",
