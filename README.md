@@ -142,7 +142,20 @@ the testing library implementing jest with nestjs is pending.
 ## Migration
 
 Basic migration setup is created to run migrations. it is necessary to write migrations to do any database change (alter table, or creation, deletion of table or indexes).
-TODO: using migrations, create indexes on unique columns (id, name)
+
+write your migration using
+
+```
+ https://github.com/seppevs/migrate-mongo/#creating-a-new-migration-script
+```
+
+### To create and run migrations
+
+```
+migrate-mongo create <migration-name>
+migrate-mongo up
+migrate-mongo down
+```
 
 ## opportunity to enhance the system
 
