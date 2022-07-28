@@ -62,9 +62,15 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
-## Notes for consideration
+## Notes or Approach detail for consideration
 
-- The phot string can be saved in film module, and stored in a bucket (Amazon S3, Google) to have a robust service.
+- The photo string can be saved in film module, and stored in a bucket (Amazon S3, Google) to have a robust service.
+- The comments are stored in review, along with rating. And an average of the ratings are attached to each films (with respect to their reviews)
+- multiple genres and reviews can be added to films
+- only a reviewer User can create review
+- by default only existing genres (using an array of genreId) can be added to a film
+- film's addResources method can be used to add existing genresId[] or a single review{}
+- due to lack of development-resource(time), DELETE methods are not implemented
 
 ## env file template
 
